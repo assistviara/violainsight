@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <title>分析キャパシティシミュレーター</title>
+</head>
+<body>
+    <h1>分析キャパシティシミュレーター</h1>
+
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">計算する</button>
+    </form>
+
+    {% if result %}
+        <hr>
+        <h2>結果</h2>
+        <ul>
+            <li>プラン1 最大件数: {{ result.max_plan1|floatformat:1 }} 件/年</li>
+            <li>プラン2 最大件数: {{ result.max_plan2|floatformat:1 }} 件/年</li>
+            <li>プラン3 最大件数: {{ result.max_plan3|floatformat:1 }} 件/年</li>
+            <li>使用時間: {{ result.used_hours }} 時間/年</li>
+            <li>残り時間: {{ result.remaining_hours }} 時間/年</li>
+            <li>追加できる単発案件（目安）:
+                {{ result.additional_single_cases|floatformat:1 }} 件
+            </li>
+        </ul>
+    {% endif %}
+</body>
+</html>

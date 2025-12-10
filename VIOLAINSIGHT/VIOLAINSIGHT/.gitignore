@@ -1,0 +1,43 @@
+# ---- Python ----
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ---- Virtualenv ----
+venv/
+.venv/
+ENV/
+env/
+*.env
+
+# ---- Django ----
+*.log
+*.pot
+*.pyc
+*.db
+*.sqlite3
+media/
+staticfiles/
+local_settings.py
+
+# ---- VSCode ----
+.vscode/
+
+# ---- OS ----
+.DS_Store
+Thumbs.db
+
+# ---- Pytest / Coverage ----
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ---- Pip ----
+pip-wheel-metadata/
+
+# ---- Jupyter ----
+.ipynb_checkpoints/
+
+# ---- Others ----
+*.bak
+*.swp
