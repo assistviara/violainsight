@@ -1,11 +1,13 @@
+{% load humanize %}
+
 <!DOCTYPE html>
-<html>
+<html lang="ja">
 <head>
-    <meta charset="utf-8">
-    <title>分析キャパシティシミュレーター</title>
+    <meta charset="UTF-8">
+    <title>VIOLA INSIGHT｜キャパ＆収入シミュレーター</title>
 </head>
 <body>
-    <h1>分析キャパシティシミュレーター</h1>
+    <h1>VIOLA INSIGHT｜キャパ＆収入シミュレーター</h1>
 
     <form method="post">
         {% csrf_token %}
@@ -16,16 +18,91 @@
     {% if result %}
         <hr>
         <h2>結果</h2>
+
+        {# 1. ベース条件 #}
+        <h3>1. ベース条件</h3>
+        <p>必要ベース時給：{{ result.base_hourly_rate|floatformat:0 }} 円/時</p>
+        <p>安全稼働時間（創造的オフを守るライン）：{{ result.safe_hours|floatformat:1 }} 時間/年</p>
+
+        <h3>2. プラン別 推奨単価</h3>
         <ul>
-            <li>プラン1 最大件数: {{ result.max_plan1|floatformat:1 }} 件/年</li>
-            <li>プラン2 最大件数: {{ result.max_plan2|floatformat:1 }} 件/年</li>
-            <li>プラン3 最大件数: {{ result.max_plan3|floatformat:1 }} 件/年</li>
-            <li>使用時間: {{ result.used_hours }} 時間/年</li>
-            <li>残り時間: {{ result.remaining_hours }} 時間/年</li>
-            <li>追加できる単発案件（目安）:
-                {{ result.additional_single_cases|floatformat:1 }} 件
+            <!-- プラン1：初期分析（2年ごと） -->
+            <li>
+                プラン1（初期分析 2年ごと）：
+                {{ result.plan1_price|intcomma }} 円 / 回
+                {% if result.initial_plan %}
+                    （プラン: {{ result.initial_plan }}）
+                {% endif %}
+            </li>
+
+            <!-- プラン2：月次伴走（small / medium / large） -->
+            <li>
+                プラン2（月次伴走）：
+                {{ result.plan2_price_annual|intcomma }} 円 / 年
+                {% if result.monthly_category %}
+                    （カテゴリ: {{ result.monthly_category }}）
+                {% endif %}
+            </li>
+
+            <!-- プラン3：棚卸診断（単発） -->
+            <li>
+                プラン3（棚卸診断 単発）：
+                {{ result.plan3_price|intcomma }} 円 / 回
             </li>
         </ul>
+
+
+        {# 3. 売上規模別の料金テーブル #}
+        <h3>3. 売上規模別の料金テーブル</h3>
+
+        <h4>◆ 月次伴走フィーの目安</h4>
+        <ul>
+            <li>小規模店：{{ result.monthly_fee_small|intcomma }} 円 / 月</li>
+            <li>中規模店：{{ result.monthly_fee_medium|intcomma }} 円 / 月</li>
+            <li>大規模店：{{ result.monthly_fee_large|intcomma }} 円 / 月</li>
+        </ul>
+
+        <h4>◆ 初期分析・2年ごとの更新</h4>
+        <ul>
+            <li>ライト版：{{ result.initial_light|intcomma }} 円</li>
+            <li>フル版　：{{ result.initial_full|intcomma }} 円</li>
+        </ul>
+
+        {# 4. 現在のプラン構成でのシミュレーション #}
+        <h3>4. 現在のプラン構成でのシミュレーション</h3>
+        <p>年間稼働時間：{{ result.used_hours|floatformat:1 }} 時間</p>
+        <p>残り時間：{{ result.remaining_hours|floatformat:1 }} 時間</p>
+        <p>推定年収：{{ result.estimated_income|intcomma }} 円</p>
+        <p>
+            目標との差：
+            {% if result.income_diff >= 0 %}
+                +{{ result.income_diff|intcomma }} 円（目標より余裕あり）
+            {% else %}
+                {{ result.income_diff|intcomma }} 円（目標に届いていない）
+            {% endif %}
+        </p>
+
+        <p>
+            稼働ゾーン：
+            {% if result.zone == "safe" %}
+                🟢 安全ゾーン（収入も時間もバランス良い）
+            {% elif result.zone == "warning" %}
+                🟡 注意ゾーン（いけるが、やや詰め込み気味）
+            {% else %}
+                🔴 危険ゾーン（時間オーバー or ほぼ限界）
+            {% endif %}
+        </p>
+
+        {# 5. 目標年収に近いおすすめ構成 #}
+        {% if result.suggestion %}
+            <h3>5. 目標年収に近いおすすめ構成（ざっくり）</h3>
+            <p>プラン2（月次伴走）：{{ result.suggestion.plan2_clients }} 件</p>
+            <p>プラン1（体質診断）：{{ result.suggestion.plan1_cases }} 件/年</p>
+            <p>プラン3（棚卸診断）：{{ result.suggestion.plan3_cases }} 件/年</p>
+            <p>→ その場合の推定年収：{{ result.suggestion.income|intcomma }} 円</p>
+            <p>→ 年間稼働時間：{{ result.suggestion.used_hours|floatformat:1 }} 時間</p>
+            <p>→ 目標との差：{{ result.suggestion.diff|intcomma }} 円</p>
+        {% endif %}
     {% endif %}
 </body>
 </html>
